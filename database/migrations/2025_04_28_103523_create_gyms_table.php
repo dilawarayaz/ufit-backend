@@ -13,13 +13,14 @@ return new class extends Migration
     {
         Schema::create('gyms', function (Blueprint $table) {
             $table->id();
-            $table->string('name'); // Gym name
-            $table->string('address'); // Gym address
-            $table->string('phone'); // Gym phone number
-            $table->string('email'); // Gym email
-            $table->time('opening_time'); // Gym opening time
-            $table->time('closing_time'); // Gym closing time
-            $table->text('description')->nullable(); // Optional gym description
+            $table->string('name');
+            $table->string('address');
+            $table->string('phone');
+            $table->string('email');
+            $table->time('opening_time');
+            $table->time('closing_time');
+            $table->text('description')->nullable();
+            $table->string('image_path')->nullable(); // Add this line for image storage
             $table->timestamps();
         });
     }

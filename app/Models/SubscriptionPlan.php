@@ -57,4 +57,4 @@ class SubscriptionPlan extends Model
     {
         return $this->hasMany(PlanFeature::class);
     }
-}
+}    

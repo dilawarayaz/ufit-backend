@@ -18,5 +18,6 @@ class Gym extends Model
         'opening_time',
         'closing_time',
         'description',
+        'image_path',
     ];
 }

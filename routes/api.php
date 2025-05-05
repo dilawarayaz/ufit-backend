@@ -1,6 +1,8 @@
 <?php
 
+
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\GymApiController;
 use App\Http\Controllers\Api\PlanApiController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -39,4 +41,10 @@ Route::middleware('auth:sanctum')->group(function () {
     // If you need protected routes for creating/updating plans
     // Route::post('/', [PlanApiController::class, 'store'])->middleware('can:create_plans');
     // Route::put('/{plan}', [PlanApiController::class, 'update'])->middleware('can:edit_plans');
+});
+
+
+Route::prefix('gyms')->group(function () {
+    Route::get('/', [GymApiController::class, 'index']);
+    Route::get('/{id}', [GymApiController::class, 'show']);
 });
