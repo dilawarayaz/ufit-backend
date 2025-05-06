@@ -14,11 +14,12 @@ class AdminUserSeeder extends Seeder
 
         if (!$adminExists) {
             User::create([
-                'first_name' => 'Admin',
-                'last_name' => 'jao',
-                'email' => 'admin@gym.com',
-                'password' => bcrypt('12345678'), // Admin ka password
-                'is_admin' => 1,
+                'first_name'   => 'Admin',
+                'last_name'    => 'jao',
+                'email'        => 'admin@gym.com',
+                'phone_number' => '03001234567', // Add your desired phone number
+                'password'     => bcrypt('12345678'),
+                'is_admin'     => 1,
             ]);
         }
     }

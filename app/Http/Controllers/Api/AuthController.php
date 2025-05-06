@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Password;
@@ -13,11 +14,11 @@ class AuthController extends Controller
 {
     public function register(Request $request)
     {
-        // Validate incoming request
         $validator = Validator::make($request->all(), [
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
+            'phone_number' => 'required|string|max:15|unique:users',
             'password' => [
                 'required',
                 'confirmed',
@@ -36,18 +37,16 @@ class AuthController extends Controller
             ], 422);
         }
 
-        // Create user
         $user = User::create([
             'first_name' => $request->first_name,
             'last_name' => $request->last_name,
             'email' => $request->email,
+            'phone_number' => $request->phone_number,
             'password' => Hash::make($request->password),
         ]);
 
-        // Create token for immediate use after registration
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        // Return success response with token
         return response()->json([
             'message' => 'User registered successfully',
             'user' => $user,
@@ -55,6 +54,7 @@ class AuthController extends Controller
             'token_type' => 'Bearer'
         ], 201);
     }
+
 
     public function login(Request $request)
     {
@@ -105,4 +105,76 @@ class AuthController extends Controller
             'message' => 'Successfully logged out'
         ], 200);
     }
+    public function sendEmailOtp(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email'
+        ]);
+    
+        $user = User::where('email', $request->email)->first();
+    
+        if (!$user) {
+            return response()->json(['message' => 'User not found'], 404);
+        }
+    
+        $otp = rand(1000, 9999);
+    
+        // Store OTP in cache for 5 minutes
+        Cache::put('email_otp_' . $user->email, $otp, now()->addMinutes(5));
+    
+        // For development purpose (real app will send via email)
+        // You can also implement a Mailable if needed
+        return response()->json([
+            'message' => 'OTP sent successfully to email',
+            'otp' => $otp // remove in production
+        ], 200);
+    }
+
+    public function resetPasswordWithEmail(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'otp' => 'required|string',
+            'new_password' => 'required|string|confirmed|min:6',
+        ]);
+    
+        $user = User::where('email', $request->email)->first();
+    
+        if (!$user) {
+            return response()->json(['message' => 'User not found'], 404);
+        }
+    
+        $cachedOtp = Cache::get('email_otp_' . $user->email);
+    
+        if ($cachedOtp != $request->otp) {
+            return response()->json(['message' => 'Invalid OTP'], 400);
+        }
+    
+        $user->password = Hash::make($request->new_password);
+        $user->save();
+    
+        Cache::forget('email_otp_' . $user->email);
+    
+        return response()->json(['message' => 'Password reset successfully'], 200);
+    }
+    public function verifyOtp(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'otp' => 'required|string',
+        ]);
+    
+        $user = User::where('email', $request->email)->first();
+    
+        if (!$user || $user->otp !== $request->otp) {
+            return response()->json(['message' => 'Invalid OTP'], 400);
+        }
+    
+        // Optionally clear OTP after successful verification
+        $user->otp = null;
+        $user->save();
+    
+        return response()->json(['message' => 'OTP verified successfully']);
+    }
+        
 }
