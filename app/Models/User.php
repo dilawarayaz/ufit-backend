@@ -50,4 +50,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(UserSubscription::class);
     }
+
+    public function favoriteGyms()
+{
+    return $this->belongsToMany(Gym::class, 'favorite_gyms')->withTimestamps();
+}
+
 }

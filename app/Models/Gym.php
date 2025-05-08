@@ -20,4 +20,11 @@ class Gym extends Model
         'description',
         'image_path',
     ];
+
+    public function favoredByUsers()
+{
+    return $this->belongsToMany(User::class, 'favorite_gyms')->withTimestamps();
 }
+
+}
+   

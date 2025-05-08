@@ -46,6 +46,7 @@ class GymController extends Controller
 
     public function edit($id)
     {
+        
         // Find the gym by ID
         $gym = Gym::findOrFail($id);
 

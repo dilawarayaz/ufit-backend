@@ -1,5 +1,6 @@
  <?php
  use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\FavoriteGymController;
 use App\Http\Controllers\Api\GymApiController;
 use App\Http\Controllers\Api\PlanApiController;
 use Illuminate\Http\Request;
@@ -33,4 +34,13 @@ Route::prefix('plans')->group(function () {
 Route::prefix('gyms')->group(function () {
     Route::get('/', [GymApiController::class, 'index']);
     Route::get('/{id}', [GymApiController::class, 'show']);
+    Route::post('/', [GymApiController::class, 'store']);
+    Route::post('update/{id}', [GymApiController::class, 'update']);
+    Route::delete('/{id}', [GymApiController::class, 'destroy']);
+});
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('gyms/{gymId}/favorite', [FavoriteGymController::class, 'favorite']);
+    Route::delete('gyms/{gymId}/favorite', [FavoriteGymController::class, 'unfavorite']);
+    Route::get('my-favorite-gyms', [FavoriteGymController::class, 'myFavorites']);
 });
