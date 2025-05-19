@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Gym;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 
 class GymController extends Controller
@@ -44,18 +46,10 @@ class GymController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'address' => 'required|string',
-            'phone' => 'required|string',
-            'email' => 'required|email',
-            'opening_time' => 'required|date_format:H:i',
-            'closing_time' => [
-                'required',
-                'date_format:H:i',
-                function ($attribute, $value, $fail) use ($request) {
-                    if (strtotime($value) <= strtotime($request->opening_time)) {
-                        $fail('Closing time must be after opening time.');
-                    }
-                }
-            ],
+            'phone_number' => 'required|string|unique:users',
+            'email' => 'required|email|unique:users',
+            'opening_time' => 'required',
+            'closing_time' =>'required',
             'description' => 'nullable|string',
             'facilities' => 'required|array',
             'facilities.*' => 'string',
@@ -63,9 +57,19 @@ class GymController extends Controller
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
             'status' => 'required|in:pending,approved,rejected',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif',
             'payment_settings' => 'nullable|array',
         ]);
+    //   dd($request);
+       
+        $user = new User();
+        $user->first_name = $request->first_name;
+        $user->last_name = $request->last_name;
+        $user->email = $request->email;
+        $user->phone_number = $request->phone_number;
+        $user->password = Hash::make( $request->password );
+        $user->role_id = 2;
+        $user->save();
 
         // Handle image upload
         $imagePath = null;
@@ -77,7 +81,7 @@ class GymController extends Controller
         Gym::create([
             'name' => $validated['name'],
             'address' => $validated['address'],
-            'phone' => $validated['phone'],
+            'phone' => $validated['phone_number'],
             'email' => $validated['email'],
             'opening_time' => $validated['opening_time'],
             'closing_time' => $validated['closing_time'],
@@ -89,7 +93,10 @@ class GymController extends Controller
             'status' => 'approved',
             'image_path' => $imagePath,
             'payment_settings' => json_encode($request->input('payment_settings', [])),
+            'owner_id'=>$user->id,
+            'region_id'=> $request->region_id,
         ]);
+        
 
         return redirect()->route('admin.gyms.index')->with('success', 'Gym created successfully.');
     }
@@ -176,3 +183,4 @@ class GymController extends Controller
         return view('admin.gyms.statistics', compact('gym'));
     }
 }
+

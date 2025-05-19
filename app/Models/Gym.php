@@ -24,7 +24,8 @@ class Gym extends Model
         'payment_settings',
         'latitude',
         'longitude',
-        'region_id'
+        'region_id',
+        'owner_id'
     ];
 
     protected $casts = [
@@ -82,5 +83,9 @@ public function users()
     return $this->hasMany(User::class);
 }
 
+public function owner()
+{
+    return $this->hasOne(User::class,'id','owner_id');
+}
 
 }
