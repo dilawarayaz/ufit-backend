@@ -35,12 +35,28 @@ class PlanController extends Controller
             'name' => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
             'status' => 'required|in:active,inactive',
+            'features' => 'nullable|array',
+            'features.*.name' => 'required_with:features|string|max:255',
+            'features.*.description' => 'nullable|string',
+            'features.*.limit' => 'nullable|integer|min:1',
         ]);
 
-        SubscriptionPlan::create($request->all());
+        // Create the plan
+        $plan = SubscriptionPlan::create($request->only(['name', 'price', 'status']));
+
+        // Add features if any
+        if ($request->has('features')) {
+            foreach ($request->features as $featureData) {
+                $plan->features()->create([
+                    'name' => $featureData['name'],
+                    'description' => $featureData['description'] ?? null,
+                    'limit' => $featureData['limit'] ?? null,
+                ]);
+            }
+        }
 
         return redirect()->route('admin.plans.index')
-            ->with('success', 'Plan created successfully.');
+            ->with('success', 'Plan created successfully with features.');
     }
 
     /**
@@ -48,9 +64,7 @@ class PlanController extends Controller
      */
     public function show(SubscriptionPlan $plan)
     {
-        // Using the relationship to get features of the plan
-        $features = $plan->features;  // This will fetch the features of the plan
-    
+        $features = $plan->features;
         return view('admin.plans.show', compact('plan', 'features'));
     }
 
@@ -59,7 +73,8 @@ class PlanController extends Controller
      */
     public function edit(SubscriptionPlan $plan)
     {
-        return view('admin.plans.edit', compact('plan'));
+        $features = $plan->features;
+        return view('admin.plans.edit', compact('plan', 'features'));
     }
 
     /**
@@ -71,12 +86,54 @@ class PlanController extends Controller
             'name' => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
             'status' => 'required|in:active,inactive',
+            'features' => 'nullable|array',
+            'features.*.name' => 'required_with:features|string|max:255',
+            'features.*.description' => 'nullable|string',
+            'features.*.limit' => 'nullable|integer|min:1',
+            'features.*.id' => 'nullable|exists:plan_features,id', // For existing features
+            'features.*.enabled' => 'boolean',
         ]);
 
-        $plan->update($request->all());
+        // Update the plan
+        $plan->update($request->only(['name', 'price', 'status']));
+
+        // Handle features
+        if ($request->has('features')) {
+            $existingFeatureIds = [];
+            
+            foreach ($request->features as $featureData) {
+                if (isset($featureData['id'])) {
+                    // Update existing feature
+                    $feature = $plan->features()->find($featureData['id']);
+                    if ($feature) {
+                        $feature->update([
+                            'name' => $featureData['name'],
+                            'description' => $featureData['description'] ?? null,
+                            'limit' => $featureData['limit'] ?? null,
+                            'enabled' => $featureData['enabled'] ?? true,
+                        ]);
+                        $existingFeatureIds[] = $feature->id;
+                    }
+                } else {
+                    // Create new feature
+                    $newFeature = $plan->features()->create([
+                        'name' => $featureData['name'],
+                        'description' => $featureData['description'] ?? null,
+                        'limit' => $featureData['limit'] ?? null,
+                    ]);
+                    $existingFeatureIds[] = $newFeature->id;
+                }
+            }
+            
+            // Delete features not included in the request
+            $plan->features()->whereNotIn('id', $existingFeatureIds)->delete();
+        } else {
+            // If no features in request, delete all
+            $plan->features()->delete();
+        }
 
         return redirect()->route('admin.plans.index')
-            ->with('success', 'Plan updated successfully.');
+            ->with('success', 'Plan updated successfully with features.');
     }
 
     /**
@@ -85,79 +142,7 @@ class PlanController extends Controller
     public function destroy(SubscriptionPlan $plan)
     {
         $plan->delete();
-
         return redirect()->route('admin.plans.index')
             ->with('success', 'Plan deleted successfully.');
-    }
-
-    // Plan Feature Management
-
-    /**
-     * Show the form to create a feature for a plan.
-     */
-    public function createFeature(SubscriptionPlan $plan)
-    {
-        return view('admin.plans.features.create', compact('plan'));
-    }
-
-    /**
-     * Store a newly created feature for a plan.
-     */
-    public function storeFeature(Request $request, SubscriptionPlan $plan)
-    {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'limit' => 'nullable|integer|min:1',
-        ]);
-
-        // Store feature with associated plan_id
-        $plan->features()->create([
-            'name' => $request->name,
-            'description' => $request->description,
-            'limit' => $request->limit,
-        ]);
-
-        return redirect()->route('admin.plans.show', $plan->id)
-            ->with('success', 'Feature added successfully.');
-    }
-
-    /**
-     * Show the form for editing a feature for a plan.
-     */
-    public function editFeature(SubscriptionPlan $plan, PlanFeature $feature)
-    {
-        return view('admin.plans.features.edit', compact('plan', 'feature'));
-    }
-
-    /**
-     * Update a feature for a plan.
-     */
-    public function updateFeature(Request $request, SubscriptionPlan $plan, PlanFeature $feature)
-    {
-        $request->validate([
-            'name' => 'required|string|max:255',   
-            'description' => 'nullable|string',
-            'limit' => 'nullable|integer|min:1',
-            'enabled' => 'boolean',
-        ]);
-
-        // Update feature
-        $feature->update($request->all());
-
-        return redirect()->route('admin.plans.show', $plan->id)
-            ->with('success', 'Feature updated successfully.');
-    }
-
-    /**
-     * Remove a feature from a plan.
-     */
-    public function destroyFeature(SubscriptionPlan $plan, PlanFeature $feature)
-    {
-        // Delete feature
-        $feature->delete();
-
-        return redirect()->route('admin.plans.show', $plan->id)
-            ->with('success', 'Feature removed successfully.');
     }
 }

@@ -11,6 +11,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             GymSeeder::class,
             SubscriptionPlanSeeder::class,
+            RegionSeeder::class,
         ]);
     }
 }

@@ -1,0 +1,318 @@
+.card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.chart-container {
+    position: relative;
+}
+
+.list-group-item {
+    border-left: 0;
+    border-right: 0;
+}
+
+:root {
+    --sidebar-width: 250px;
+    --sidebar-bg: linear-gradient(180deg, #2c3e50, #1a2530);
+    --sidebar-header-bg: rgba(0, 0, 0, 0.2);
+    --sidebar-text: #b8c7ce;
+    --sidebar-active: #3c8dbc;
+}
+
+body {
+    display: flex;
+    min-height: 100vh;
+    overflow-x: hidden;
+    background-color: #f4f6f9;
+}
+
+/* Sidebar styling */
+.sidebar {
+    width: var(--sidebar-width);
+    min-height: 100vh;
+    background: var(--sidebar-bg);
+    color: white;
+    transition: all 0.3s;
+    box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
+    position: fixed;
+    z-index: 1000;
+}
+
+.sidebar-header {
+    padding: 20px;
+    background: var(--sidebar-header-bg);
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-header h3 {
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.5rem;
+    letter-spacing: 1px;
+    margin: 0;
+}
+
+.sidebar-menu {
+    padding: 20px 0;
+    height: calc(100vh - 130px);
+    overflow-y: auto;
+}
+
+.sidebar-menu ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar-menu li a {
+    display: block;
+    padding: 12px 20px;
+    color: var(--sidebar-text);
+    text-decoration: none;
+    transition: all 0.3s;
+    border-left: 3px solid transparent;
+}
+
+.sidebar-menu li a:hover,
+.sidebar-menu li a.active {
+    color: white;
+    background: rgba(255, 255, 255, 0.1);
+    border-left: 3px solid var(--sidebar-active);
+}
+
+.sidebar-menu li a i {
+    margin-right: 10px;
+    width: 20px;
+    text-align: center;
+}
+
+.sidebar-footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.2);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.main-content {
+    flex: 1;
+    padding: 20px;
+    margin-left: var(--sidebar-width);
+    min-height: 100vh;
+}
+
+/* Toggle button for mobile */
+.sidebar-toggle {
+    display: none;
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    z-index: 1050;
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        margin-left: calc(-1 * var(--sidebar-width));
+    }
+
+    .sidebar.active {
+        margin-left: 0;
+    }
+
+    .sidebar-toggle {
+        display: block;
+    }
+
+    .main-content {
+        margin-left: 0;
+    }
+}
+
+    .card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    .bg-opacity-10 {
+        background-opacity: 0.1;
+    }
+    .chart-container {
+        position: relative;
+    }
+    .list-group-item {
+        border-left: 0;
+        border-right: 0;
+    }
+    .list-group-item:first-child {
+        border-top: 0;
+    }
+    .list-group-item:last-child {
+        border-bottom: 0;
+    }
+
+
+    /* public/css/admin-users.css */
+.custom-shadow {
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+}
+
+.table thead th {
+    vertical-align: middle;
+    font-weight: 600;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+.btn i {
+    margin-right: 4px;
+}
+
+.table a {
+    transition: all 0.2s ease;
+}
+
+.table a:hover {
+    color: #0d6efd;
+    text-decoration: underline;
+}
+
+.table .badge {
+    font-size: 0.85rem;
+}
+
+@media (max-width: 768px) {
+    .table-responsive {
+        font-size: 0.9rem;
+    }
+
+    .btn, .form-control {
+        font-size: 0.875rem;
+    }
+}
+
+
+
+/* Container Styling */
+.pagination-container {
+    font-family: 'Arial', sans-serif;
+    margin-top: 20px;
+}
+
+/* Pagination List Styling */
+.pagination {
+    display: flex;
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+/* Page Item Styling */
+.page-item {
+    margin: 0 5px;
+}
+
+/* Page Link Styling */
+.page-link {
+    display: inline-block;
+    padding: 10px 15px;
+    font-size: 14px;
+    color: #007bff;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+/* Hover Effect for Page Links */
+.page-link:hover {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+/* Active Page Link Styling */
+.page-item.active .page-link {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+/* Disabled State for Previous and Next Buttons */
+.page-item.disabled .page-link {
+    color: #6c757d;
+    background-color: #f8f9fa;
+    border-color: #dee2e6;
+    pointer-events: none;
+}
+
+/* Previous & Next Button Styling */
+.prev-link, .next-link {
+    font-weight: bold;
+}
+
+/* Margin for Page Items */
+.page-item + .page-item {
+    margin-left: 5px;
+}
+
+/* Adjustments for Small Screens */
+@media (max-width: 576px) {
+    .pagination {
+        font-size: 12px;
+    }
+
+    .page-link {
+        padding: 8px 12px;
+    }
+}
+
+
+
+
+
+/* Marketing Tools Specific Styles */
+.campaign-stats {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+.notification-preview {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 15px;
+    background: white;
+    margin-bottom: 20px;
+}
+
+.notification-preview .title {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.template-selector {
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.template-selector:hover {
+    transform: scale(1.02);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.template-selector.active {
+    border: 2px solid #0d6efd;
+}

@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Gym;
+use App\Models\Region; // Add this line if you have a Region model
 use Faker\Factory;
 use Illuminate\Database\Seeder;
 
@@ -12,6 +13,14 @@ class GymSeeder extends Seeder
     {
         $faker = Factory::create();
 
+        // Get all region IDs (ensure you’ve seeded the regions first)
+        $regionIds = Region::pluck('id')->toArray();
+
+        if (empty($regionIds)) {
+            $this->command->error('No regions found. Please seed regions before gyms.');
+            return;
+        }
+
         $sampleImages = [
             'https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=400',
             'https://images.unsplash.com/photo-1545205597-3d9d02c29597?w=400',
@@ -20,21 +29,39 @@ class GymSeeder extends Seeder
             'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400',
         ];
 
+        $statuses = ['approved', 'pending']; // alternate between two
+
         for ($i = 0; $i < 20; $i++) {
             $imageUrl = $sampleImages[array_rand($sampleImages)];
+            $status = $statuses[$i % 2];
 
             Gym::create([
-                'name' => $faker->company.' Gym',
+                'region_id' => $regionIds[array_rand($regionIds)], // Assign random region
+                'name' => $faker->company . ' Gym',
                 'address' => $faker->address,
                 'phone' => $faker->phoneNumber,
                 'email' => $faker->companyEmail,
                 'opening_time' => $faker->time('H:i', '06:00'),
                 'closing_time' => $faker->time('H:i', '22:00'),
                 'description' => $faker->paragraph(3),
-                'image_path' => $imageUrl, // ✅ Just use the URL
+                'image_path' => $imageUrl,
+                'facilities' => json_encode([
+                    'Cardio Machines',
+                    'Weight Lifting',
+                    'Personal Training',
+                    'Yoga Classes'
+                ]),
+                'status' => $status,
+                'commission_rate' => $faker->randomFloat(2, 5, 20),
+                'payment_settings' => json_encode([
+                    'paypal' => true,
+                    'stripe' => false,
+                ]),
+                'latitude' => $faker->latitude,
+                'longitude' => $faker->longitude,
             ]);
 
-            $this->command->info("Created gym {$i} with image URL: {$imageUrl}");
+            $this->command->info("Created gym {$i} with status: {$status}");
         }
     }
 }

@@ -32,11 +32,24 @@ Route::prefix('plans')->group(function () {
 
 // Gyms routes
 Route::prefix('gyms')->group(function () {
+    // Public routes
     Route::get('/', [GymApiController::class, 'index']);
     Route::get('/{id}', [GymApiController::class, 'show']);
     Route::post('/', [GymApiController::class, 'store']);
-    Route::post('update/{id}', [GymApiController::class, 'update']);
-    Route::delete('/{id}', [GymApiController::class, 'destroy']);
+    
+    // Protected routes (require authentication)
+    Route::middleware('auth:api')->group(function () {
+        Route::put('/{id}', [GymApiController::class, 'update']);
+        Route::patch('/{id}', [GymApiController::class, 'update']);
+        Route::delete('/{id}', [GymApiController::class, 'destroy']);
+        
+        // Admin-only routes
+        Route::middleware('admin')->group(function () {
+            Route::get('/pending', [GymApiController::class, 'pendingGyms']);
+            Route::post('/{id}/approve', [GymApiController::class, 'approveGym']);
+            Route::post('/{id}/reject', [GymApiController::class, 'rejectGym']);
+        });
+    });
 });
 
 Route::middleware('auth:sanctum')->group(function () {

@@ -5,15 +5,15 @@
     <div class="row justify-content-center">
         <div class="col-lg-10">
 
-            {{-- Plan Title --}}
-            <div class="mb-4 d-flex justify-content-between align-items-center">
+            {{-- Plan Header --}}
+            <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2 class="fw-bold text-primary mb-0">{{ $plan->name }}</h2>
                 <a href="{{ route('admin.plans.index') }}" class="btn btn-outline-secondary">
                     <i class="fas fa-arrow-left me-1"></i> Back to Plans
                 </a>
             </div>
 
-            {{-- Plan Description --}}
+            {{-- Description Card --}}
             <div class="card shadow-sm border-0 mb-4">
                 <div class="card-body">
                     <h5 class="fw-semibold mb-2">Description</h5>
@@ -21,13 +21,10 @@
                 </div>
             </div>
 
-            {{-- Plan Features --}}
+            {{-- Features Card --}}
             <div class="card shadow-sm border-0">
-                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <div class="card-header bg-white">
                     <h5 class="mb-0 fw-bold">Plan Features</h5>
-                    <a href="{{ route('admin.plans.features.create', $plan->id) }}" class="btn btn-sm btn-success">
-                        <i class="fas fa-plus me-1"></i> Add Feature
-                    </a>
                 </div>
                 <div class="card-body">
 
@@ -40,7 +37,10 @@
                                         <p class="mb-1 text-muted">{{ $feature->description ?: 'No description.' }}</p>
                                         <small class="text-secondary">Limit: {{ $feature->limit ?? 'N/A' }}</small>
                                     </div>
-                                    <form action="{{ route('admin.plans.features.destroy', [$plan->id, $feature->id]) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this feature?');">
+                                    <form 
+                                        action="{{ route('admin.plans.features.destroy', [$plan->id, $feature->id]) }}" 
+                                        method="POST" 
+                                        onsubmit="return confirm('Are you sure you want to delete this feature?');">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-outline-danger">

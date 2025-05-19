@@ -11,22 +11,29 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('user_subscriptions', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->string('subscription_type', 50);
-            $table->boolean('is_active')->default(true);
-            $table->date('start_date');
-            $table->date('end_date');
-            $table->decimal('price', 10, 2)->nullable(); // Added for payment tracking
-            $table->string('payment_status', 20)->default('pending'); // Added for payment tracking
-            $table->string('billing_cycle', 20)->nullable(); // monthly/yearly etc.
-            $table->text('notes')->nullable();
-            $table->timestamps();
-            $table->softDeletes(); // For archiving subscriptions
-        });
-    }
+       Schema::create('user_subscriptions', function (Blueprint $table) {
+    $table->id();
+    
+    // Creates user_id column with FK to users.id and cascade on delete
+    $table->integer('user_id');
+    
+    // Creates gym_id column with FK to gyms.id, nullable and set null on delete
+    $table->integer('gym_id');
 
+    $table->string('subscription_type', 50);
+    $table->boolean('is_active')->default(true);
+    $table->date('start_date');
+    $table->date('end_date');
+    $table->decimal('price', 10, 2)->nullable();
+    $table->string('payment_status', 20)->default('pending');
+    $table->string('billing_cycle', 20)->nullable();
+    $table->text('notes')->nullable();
+    
+    $table->timestamps();
+    $table->softDeletes();
+});
+
+    }
 
     /**
      * Reverse the migrations.

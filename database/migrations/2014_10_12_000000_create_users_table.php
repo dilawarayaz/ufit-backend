@@ -18,10 +18,15 @@ return new class extends Migration
             $table->string('email')->unique(); // Added email
             $table->string('phone_number')->unique(); // Added phone number
             $table->boolean('is_admin')->default(false);
+            $table->boolean('is_paid')->default(false);
+            $table->boolean('is_suspended')->default(false);
             $table->timestamp('email_verified_at')->nullable();
+            $table->unsignedBigInteger('gym_id')->nullable();
+            $table->unsignedBigInteger('role_id')->nullable();
             $table->string('password');
             $table->rememberToken();
             $table->timestamps();
+            
         });
     }
 
