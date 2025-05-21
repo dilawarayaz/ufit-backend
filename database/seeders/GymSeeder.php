@@ -3,7 +3,8 @@
 namespace Database\Seeders;
 
 use App\Models\Gym;
-use App\Models\Region; // Add this line if you have a Region model
+use App\Models\Region;
+use App\Models\User; // If owners are users
 use Faker\Factory;
 use Illuminate\Database\Seeder;
 
@@ -13,11 +14,19 @@ class GymSeeder extends Seeder
     {
         $faker = Factory::create();
 
-        // Get all region IDs (ensure you’ve seeded the regions first)
+        // Get all region IDs
         $regionIds = Region::pluck('id')->toArray();
+
+        // Get all user IDs to assign as owners
+        $ownerIds = User::pluck('id')->toArray();
 
         if (empty($regionIds)) {
             $this->command->error('No regions found. Please seed regions before gyms.');
+            return;
+        }
+
+        if (empty($ownerIds)) {
+            $this->command->error('No owners found. Please seed users before gyms.');
             return;
         }
 
@@ -29,14 +38,15 @@ class GymSeeder extends Seeder
             'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400',
         ];
 
-        $statuses = ['approved', 'pending']; // alternate between two
+        $statuses = ['approved', 'pending'];
 
         for ($i = 0; $i < 20; $i++) {
             $imageUrl = $sampleImages[array_rand($sampleImages)];
             $status = $statuses[$i % 2];
 
             Gym::create([
-                'region_id' => $regionIds[array_rand($regionIds)], // Assign random region
+                'region_id' => $regionIds[array_rand($regionIds)],
+                'owner_id' => $ownerIds[array_rand($ownerIds)], // ✅ Owner assigned here
                 'name' => $faker->company . ' Gym',
                 'address' => $faker->address,
                 'phone' => $faker->phoneNumber,
@@ -61,7 +71,7 @@ class GymSeeder extends Seeder
                 'longitude' => $faker->longitude,
             ]);
 
-            $this->command->info("Created gym {$i} with status: {$status}");
+            $this->command->info("Created gym {$i} with owner and status: {$status}");
         }
     }
 }

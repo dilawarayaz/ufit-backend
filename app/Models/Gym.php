@@ -19,7 +19,7 @@ class Gym extends Model
         'description',
         'image_path',
         'facilities',
-        'status', // 'pending', 'approved', 'rejected'
+        'status', 
         'commission_rate',
         'payment_settings',
         'latitude',

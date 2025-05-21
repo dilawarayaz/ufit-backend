@@ -3,15 +3,18 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Mail\OtpMail;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Password;
 
 class AuthController extends Controller
 {
+    // ✅ Step 1: Register + Send OTP
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -22,11 +25,7 @@ class AuthController extends Controller
             'password' => [
                 'required',
                 'confirmed',
-                Password::min(8)
-                    ->letters()
-                    ->mixedCase()
-                    ->numbers()
-                    ->symbols()
+                Password::min(8)->letters()->mixedCase()->numbers()->symbols(),
             ],
         ]);
 
@@ -37,28 +36,56 @@ class AuthController extends Controller
             ], 422);
         }
 
-        $user = User::create([
-            'first_name' => $request->first_name,
-            'last_name' => $request->last_name,
-            'email' => $request->email,
-            'phone_number' => $request->phone_number,
-            'password' => Hash::make($request->password),
+        // Save data temporarily in cache
+        $otp = rand(1000, 9999);
+        $data = $request->only(['first_name', 'last_name', 'email', 'phone_number', 'password']);
+        $data['password'] = Hash::make($data['password']);
+
+        Cache::put('register_' . $data['email'], $data, now()->addMinutes(10));
+        Cache::put('otp_' . $data['email'], $otp, now()->addMinutes(10));
+          
+         Mail::to($data['email'])->send(new OtpMail($otp));
+        // TODO: Send email instead of returning OTP (for production)
+        return response()->json([
+            'message' => 'OTP sent to email',
+            
+        ]);
+    }
+
+    // ✅ Step 2: Verify OTP & Create User
+    public function verifyOtp(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'otp' => 'required'
         ]);
 
+        $cachedOtp = Cache::get('otp_' . $request->email);
+        $userData = Cache::get('register_' . $request->email);
+
+        if (!$cachedOtp || $cachedOtp != $request->otp) {
+            return response()->json(['message' => 'Invalid or expired OTP'], 400);
+        }
+
+        // Create user
+        $user = User::create($userData);
         $token = $user->createToken('auth_token')->plainTextToken;
 
+        // Clear cache
+        Cache::forget('register_' . $request->email);
+        Cache::forget('otp_' . $request->email);
+
         return response()->json([
-            'message' => 'User registered successfully',
+            'message' => 'User verified and registered successfully',
             'user' => $user,
             'access_token' => $token,
             'token_type' => 'Bearer'
-        ], 201);
+        ]);
     }
 
-
+    // ✅ Login
     public function login(Request $request)
     {
-        // Validate login request
         $validator = Validator::make($request->all(), [
             'email' => 'required|string|email',
             'password' => 'required|string',
@@ -71,65 +98,56 @@ class AuthController extends Controller
             ], 422);
         }
 
-        // Find user by email
         $user = User::where('email', $request->email)->first();
 
-        // Check if user exists and password is correct
         if (!$user || !Hash::check($request->password, $user->password)) {
-            return response()->json([
-                'message' => 'Invalid credentials'
-            ], 401);
+            return response()->json(['message' => 'Invalid credentials'], 401);
         }
 
-        // Delete all existing tokens (optional - for single device login)
-        $user->tokens()->delete();
-
-        // Create Sanctum token
+        $user->tokens()->delete(); // single device login
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        // Return success response with token
         return response()->json([
             'message' => 'Login successful',
             'user' => $user->only(['id', 'first_name', 'last_name', 'email']),
             'access_token' => $token,
             'token_type' => 'Bearer'
-        ], 200);
+        ]);
     }
 
+    // ✅ Logout
     public function logout(Request $request)
     {
-        // Revoke the token that was used to authenticate the current request
         $request->user()->currentAccessToken()->delete();
 
         return response()->json([
             'message' => 'Successfully logged out'
-        ], 200);
+        ]);
     }
+
+    // ✅ Send OTP for Reset Password
     public function sendEmailOtp(Request $request)
     {
         $request->validate([
             'email' => 'required|email'
         ]);
-    
+
         $user = User::where('email', $request->email)->first();
-    
+
         if (!$user) {
             return response()->json(['message' => 'User not found'], 404);
         }
-    
+
         $otp = rand(1000, 9999);
-    
-        // Store OTP in cache for 5 minutes
-        Cache::put('email_otp_' . $user->email, $otp, now()->addMinutes(5));
-    
-        // For development purpose (real app will send via email)
-        // You can also implement a Mailable if needed
+        Cache::put('reset_otp_' . $user->email, $otp, now()->addMinutes(10));
+
         return response()->json([
-            'message' => 'OTP sent successfully to email',
-            'otp' => $otp // remove in production
-        ], 200);
+            'message' => 'OTP sent successfully',
+            'otp' => $otp
+        ]);
     }
 
+    // ✅ Reset Password using OTP
     public function resetPasswordWithEmail(Request $request)
     {
         $request->validate([
@@ -137,44 +155,23 @@ class AuthController extends Controller
             'otp' => 'required|string',
             'new_password' => 'required|string|confirmed|min:6',
         ]);
-    
+  
         $user = User::where('email', $request->email)->first();
-    
+        $cachedOtp = Cache::get('reset_otp_' . $request->email);
+
         if (!$user) {
             return response()->json(['message' => 'User not found'], 404);
         }
-    
-        $cachedOtp = Cache::get('email_otp_' . $user->email);
-    
-        if ($cachedOtp != $request->otp) {
+
+        if (!$cachedOtp || $cachedOtp != $request->otp) {
             return response()->json(['message' => 'Invalid OTP'], 400);
         }
-    
+
         $user->password = Hash::make($request->new_password);
         $user->save();
-    
-        Cache::forget('email_otp_' . $user->email);
-    
+
+        Cache::forget('reset_otp_' . $request->email);
+
         return response()->json(['message' => 'Password reset successfully'], 200);
     }
-    public function verifyOtp(Request $request)
-    {
-        $request->validate([
-            'email' => 'required|email',
-            'otp' => 'required|string',
-        ]);
-    
-        $user = User::where('email', $request->email)->first();
-    
-        if (!$user || $user->otp !== $request->otp) {
-            return response()->json(['message' => 'Invalid OTP'], 400);
-        }
-    
-        // Optionally clear OTP after successful verification
-        $user->otp = null;
-        $user->save();
-    
-        return response()->json(['message' => 'OTP verified successfully']);
-    }
-        
 }

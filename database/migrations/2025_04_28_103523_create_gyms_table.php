@@ -15,7 +15,7 @@ return new class extends Migration
 
             // Foreign key for region
             $table->integer('region_id');
-
+            $table->integer('owner_id');
             $table->string('name');
             $table->string('address');
             $table->string('phone');

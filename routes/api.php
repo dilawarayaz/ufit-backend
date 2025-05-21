@@ -12,7 +12,7 @@ Route::post('/login', [AuthController::class, 'login']);
 
 // Email OTP routes (Fixed method names)
 Route::post('/send-email-otp', [AuthController::class, 'sendEmailOtp']);
-Route::post('/reset-password-email', [AuthController::class, 'resetPasswordWithEmail']);
+Route::post('/reset-password-with-email', [AuthController::class, 'resetPasswordWithEmail']);
 Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
 // Authenticated routes (Sanctum protected)
 Route::middleware('auth:sanctum')->group(function () {
@@ -51,6 +51,7 @@ Route::prefix('gyms')->group(function () {
         });
     });
 });
+
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('gyms/{gymId}/favorite', [FavoriteGymController::class, 'favorite']);

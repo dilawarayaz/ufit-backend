@@ -1,4 +1,5 @@
 <?php
+
 namespace Database\Seeders;
 
 use App\Models\User;
@@ -16,83 +17,61 @@ class AdminUserSeeder extends Seeder
         $faker = Faker::create();
         $defaultGymId = 1;
 
-        $this->createUserWithLogs([
+        // 🚨 Ensure Admin is inserted FIRST (will be ID = 1 if table was empty)
+        $admin = $this->createUserWithLogs([
             'first_name'   => 'Admin',
             'last_name'    => 'Jao',
             'email'        => 'admin@gym.com',
             'phone_number' => '03001234567',
-            'is_admin'     => 1,
+            'is_admin'     => true,
             'is_paid'      => true,
             'gym_id'       => $defaultGymId,
+            'role_id'      => 1,
             'password'     => bcrypt('12345678'),
         ]);
 
-        $this->createUserWithLogs([
-            'first_name' => 'Ali',
-            'last_name' => 'Khan',
-            'email' => 'ali@example.com',
-            'phone_number' => '03001112222',
-            'is_admin' => 0,
-            'is_paid' => 1,
-            'gym_id' => $defaultGymId,
-            'password' => Hash::make('password'),
-        ]);
-
-        $this->createUserWithLogs([
-            'first_name' => 'Sara',
-            'last_name' => 'Ahmed',
-            'email' => 'sara@example.com',
-            'phone_number' => '03007654321',
-            'is_admin' => 0,
-            'is_paid' => 0,
-            'gym_id' => $defaultGymId,
-            'password' => Hash::make('password'),
-        ]);
-
+        // Baqi random users banayein
         for ($i = 0; $i < 10; $i++) {
             $this->createUserWithLogs([
-                'first_name' => $faker->firstName,
-                'last_name' => $faker->lastName,
-                'email' => $faker->unique()->safeEmail,
+                'first_name'   => $faker->firstName,
+                'last_name'    => $faker->lastName,
+                'email'        => $faker->unique()->safeEmail,
                 'phone_number' => '03' . $faker->numberBetween(100000000, 999999999),
-                'is_admin' => 0,
-                'is_paid' => $faker->boolean(),
-                'gym_id' => $defaultGymId,
-                'password' => Hash::make('password'),
+                'is_admin'     => false,
+                'is_paid'      => $faker->boolean(),
+                'gym_id'       => $defaultGymId,
+                'role_id'      => $faker->randomElement([2, 3]), // Only non-admin
+                'password'     => Hash::make('password'),
             ]);
         }
     }
 
     protected function createUserWithLogs(array $attributes)
     {
-        // Check if user with this email already exists
+        // Prevent duplicate creation
         $existingUser = User::where('email', $attributes['email'])->first();
         if ($existingUser) {
-            // Agar user already hai, to wapis existing user return karo, aur naya create na karo
             return $existingUser;
         }
 
         $user = User::create(array_merge($attributes, [
             'email_verified_at' => now(),
-            'remember_token' => Str::random(10),
+            'remember_token'    => Str::random(10),
         ]));
 
-        // Create Activity Log
         ActivityLog::create([
-            'user_id' => $user->id,
+            'user_id'       => $user->id,
             'activity_type' => 'Seeder Creation',
-            'description' => 'User created via seeder',
-            // 'timestamp' => now(),
+            'description'   => 'User created via seeder',
         ]);
 
-        // Create Payment History if user is paid
         if ($user->is_paid) {
             PaymentHistory::create([
-                'user_id' => $user->id,
-                'amount' => 2000, // fixed amount or $faker use kar sakte hain agar chahein
-                'paid_at' => now(),
+                'user_id'        => $user->id,
+                'amount'         => 2000,
+                'paid_at'        => now(),
                 'payment_method' => 'Seeder Method',
-                'status' => 'completed',
+                'status'         => 'completed',
             ]);
         }
 

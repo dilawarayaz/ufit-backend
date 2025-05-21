@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\UserSubscriptionController;
 use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\PlanController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\TestMailController;
 
 /*
 |--------------------------------------------------------------------------
@@ -142,7 +143,7 @@ Route::prefix('admin')
         });
     });
 
-
+Route::get('/test-email', [TestMailController::class, 'sendTestEmail']);
 Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::get('payments', [PaymentController::class, 'index'])->name('admin.payments.index');
     Route::get('payments-export', [PaymentController::class, 'export'])->name('admin.payments-export');
