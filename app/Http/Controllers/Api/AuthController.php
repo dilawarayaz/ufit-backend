@@ -140,10 +140,10 @@ class AuthController extends Controller
 
         $otp = rand(1000, 9999);
         Cache::put('reset_otp_' . $user->email, $otp, now()->addMinutes(10));
-
+          Mail::to($user->email)->send(new OtpMail($otp));
         return response()->json([
             'message' => 'OTP sent successfully',
-            'otp' => $otp
+            
         ]);
     }
 
