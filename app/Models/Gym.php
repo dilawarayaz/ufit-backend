@@ -69,7 +69,7 @@ class Gym extends Model
 
 public function checkIns()
 {
-    return $this->hasMany(CheckIn::class);
+    return $this->hasMany(Checkin::class);
 }
 
 public function userSubscriptions()

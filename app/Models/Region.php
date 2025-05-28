@@ -20,7 +20,7 @@ class Region extends Model
     // Relationship with CheckIns through Gyms
     public function checkIns()
     {
-        return $this->hasManyThrough(CheckIn::class, Gym::class);
+        return $this->hasManyThrough(Checkin::class, Gym::class);
     }
 
     // Relationship with UserSubscriptions through Gyms

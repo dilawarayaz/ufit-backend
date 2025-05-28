@@ -8,7 +8,6 @@ use App\Models\Subscription;
 use App\Models\User;
 use App\Models\Gym;
 use App\Models\Region;
-use App\Models\CheckIn;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
