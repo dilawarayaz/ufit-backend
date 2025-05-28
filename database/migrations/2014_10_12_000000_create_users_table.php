@@ -17,6 +17,8 @@ return new class extends Migration
             $table->string('last_name');
             $table->string('email')->unique(); // Added email
             $table->string('phone_number')->unique(); // Added phone number
+            $table->string('profile_picture')->nullable();
+            $table->string('stripe_customer_id')->nullable();
             $table->boolean('is_admin')->default(false);
             $table->boolean('is_paid')->default(false);
             $table->boolean('is_suspended')->default(false);

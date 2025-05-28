@@ -12,6 +12,11 @@ class DatabaseSeeder extends Seeder
             GymSeeder::class,
             SubscriptionPlanSeeder::class,
             RegionSeeder::class,
+            VisitSeeder::class,
+            ReviewSeeder::class,
+            AdminUserSeeder::class,
+            CheckinSeeder::class,   
+            
         ]);
     }
 }

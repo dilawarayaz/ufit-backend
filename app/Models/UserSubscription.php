@@ -6,15 +6,24 @@ use Illuminate\Database\Eloquent\Model;
 
 class UserSubscription extends Model
 {
-    protected $fillable = [
+     protected $fillable = [
         'user_id',
-        'plan_id',
         'gym_id',
+        'plan_id',
+        'subscription_type',
+        'is_active',
         'start_date',
         'end_date',
-        'is_active',
+        'price',
+        'payment_status',
+        'billing_cycle',
+        'notes',
         'previous_subscription_id',
+        'stripe_subscription_id',
+        'stripe_customer_id',
+        'last_payment_date'
     ];
+
 
     protected $casts = [
         'start_date' => 'date',
@@ -45,5 +54,17 @@ class UserSubscription extends Model
     public function gym()
     {
         return $this->belongsTo(Gym::class);
+    }
+       public function isActive(): bool
+    {
+        return $this->is_active && 
+               now()->between($this->start_date, $this->end_date);
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true)
+                    ->where('start_date', '<=', now())
+                    ->where('end_date', '>=', now());
     }
 }

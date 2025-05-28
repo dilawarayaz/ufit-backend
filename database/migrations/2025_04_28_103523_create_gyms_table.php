@@ -18,8 +18,6 @@ return new class extends Migration
             $table->integer('owner_id');
             $table->string('name');
             $table->string('address');
-            $table->string('phone');
-            $table->string('email');
             $table->time('opening_time');
             $table->time('closing_time');
             $table->text('description')->nullable();

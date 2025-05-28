@@ -61,7 +61,7 @@ class UserSubscriptionController extends Controller
     public function edit($id)
     {
         $subscription = UserSubscription::findOrFail($id);
-        return view('admin.user-subscriptions.extend', compact('subscription'));
+        return view('admin.user-subscriptions.edit', compact('subscription'));
     }
 
      /**

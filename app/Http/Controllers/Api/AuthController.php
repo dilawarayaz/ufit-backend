@@ -37,18 +37,19 @@ class AuthController extends Controller
         }
 
         // Save data temporarily in cache
-        $otp = rand(1000, 9999);
+        // $otp = rand(1000, 9999);
+        $otp = 1234; // Static OTP for development
+
         $data = $request->only(['first_name', 'last_name', 'email', 'phone_number', 'password']);
         $data['password'] = Hash::make($data['password']);
 
         Cache::put('register_' . $data['email'], $data, now()->addMinutes(10));
         Cache::put('otp_' . $data['email'], $otp, now()->addMinutes(10));
           
-         Mail::to($data['email'])->send(new OtpMail($otp));
-        // TODO: Send email instead of returning OTP (for production)
+        Mail::to($data['email'])->send(new OtpMail($otp));
+
         return response()->json([
             'message' => 'OTP sent to email',
-            
         ]);
     }
 
@@ -67,11 +68,9 @@ class AuthController extends Controller
             return response()->json(['message' => 'Invalid or expired OTP'], 400);
         }
 
-        // Create user
         $user = User::create($userData);
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        // Clear cache
         Cache::forget('register_' . $request->email);
         Cache::forget('otp_' . $request->email);
 
@@ -115,6 +114,27 @@ class AuthController extends Controller
         ]);
     }
 
+    public function gymLogin(Request $request)
+    {
+        $credentials = $request->only('email', 'password');
+
+        if (!$token = auth()->attempt($credentials)) {
+            return response()->json(['error' => 'Invalid credentials'], 401);
+        }
+
+        $user = auth()->user();
+
+        if ($user->role_id != 2) {
+            return response()->json(['error' => 'Access denied'], 403);
+        }
+
+        return response()->json([
+            'access_token' => $token,
+            'token_type' => 'bearer',
+            'user' => $user
+        ]);
+    }
+
     // ✅ Logout
     public function logout(Request $request)
     {
@@ -138,12 +158,14 @@ class AuthController extends Controller
             return response()->json(['message' => 'User not found'], 404);
         }
 
-        $otp = rand(1000, 9999);
+        // $otp = rand(1000, 9999);
+        $otp = 1234; // Static OTP for development
+
         Cache::put('reset_otp_' . $user->email, $otp, now()->addMinutes(10));
-          Mail::to($user->email)->send(new OtpMail($otp));
+        Mail::to($user->email)->send(new OtpMail($otp));
+
         return response()->json([
             'message' => 'OTP sent successfully',
-            
         ]);
     }
 
@@ -155,7 +177,7 @@ class AuthController extends Controller
             'otp' => 'required|string',
             'new_password' => 'required|string|confirmed|min:6',
         ]);
-  
+
         $user = User::where('email', $request->email)->first();
         $cachedOtp = Cache::get('reset_otp_' . $request->email);
 
@@ -173,5 +195,22 @@ class AuthController extends Controller
         Cache::forget('reset_otp_' . $request->email);
 
         return response()->json(['message' => 'Password reset successfully'], 200);
+    }
+
+    // ✅ Verify OTP for Password Reset
+    public function verifyResetOtp(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'otp' => 'required|string',
+        ]);
+
+        $cachedOtp = Cache::get('reset_otp_' . $request->email);
+
+        if (!$cachedOtp || $cachedOtp != $request->otp) {
+            return response()->json(['message' => 'Invalid or expired OTP'], 400);
+        }
+
+        return response()->json(['message' => 'OTP verified successfully'], 200);
     }
 }
