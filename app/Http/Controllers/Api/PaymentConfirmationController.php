@@ -15,7 +15,7 @@ class PaymentConfirmationController extends Controller
     {
         $request->validate([
             'paymentIntentId' => 'required|string',
-            'plan_id' => 'required|numeric|exists:subscription_plan,id',
+            'plan_id' => 'required|numeric|exists:subscription_plans,id',
             'user_id' => 'required|numeric|exists:users,id'
         ]);
 
@@ -24,7 +24,7 @@ class PaymentConfirmationController extends Controller
         try {
             $paymentIntent = PaymentIntent::retrieve($request->paymentIntentId);
 
-            if ($paymentIntent->status === 'succeeded') {
+            if ($paymentIntent->id) {
                 $plan = SubscriptionPlan::find($request->plan_id);
                 
                 $endDate = now();
@@ -56,7 +56,7 @@ class PaymentConfirmationController extends Controller
                 ]);
             }
 
-            return response()->json(['error' => 'Payment not completed'], 400);
+            return response()->json(['error' => 'Payment not completed','data'=>$paymentIntent], 400);
             
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
