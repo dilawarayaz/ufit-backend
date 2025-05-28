@@ -10,65 +10,59 @@ use Illuminate\Support\Facades\Validator;
 
 class GymApiController extends Controller
 {
-    public function index()
-    {
-        $gyms = Gym::withCount(['visits', 'reviews'])
-            ->withAvg('reviews', 'rating')
-            ->where('status', 'approved') // Only show approved gyms to public
-            ->get();
+  public function index()
+{
+    $gyms = Gym::with(['reviews.user', 'visits'])  // Nested eager load
+        ->withCount(['visits', 'reviews'])         // Direct count only
+        ->withAvg('reviews', 'rating')
+        ->where('status', 'approved')
+        ->get();
 
+    return response()->json([
+        'success' => true,
+        'data' => $gyms,
+        'message' => 'Gyms retrieved successfully'
+    ]);
+}
+
+
+   public function show($id)
+{
+    $gym = Gym::with(['reviews.user', 'visits'])
+        ->withCount(['visits', 'reviews']) // ✅ only direct relationships
+        ->withAvg('reviews', 'rating')
+        ->find($id);
+
+    if (!$gym) {
         return response()->json([
-            'success' => true,
-            'data' => $gyms,
-            'message' => 'Gyms retrieved successfully'
-        ]);
+            'success' => false,
+            'message' => 'Gym not found'
+        ], 404);
     }
 
-    public function show($id)
-    {
-        $gym = Gym::with(['visits', 'reviews'])
-            ->withCount(['visits', 'reviews'])
-            ->withAvg('reviews', 'rating')
-            ->find($id);
+    return response()->json([
+        'success' => true,
+        'data' => $gym,
+        'message' => 'Gym retrieved successfully'
+    ]);
+}
 
-        if (!$gym) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Gym not found'
-            ], 404);
-        }
-
-        return response()->json([
-            'success' => true,
-            'data' => $gym,
-            'message' => 'Gym retrieved successfully'
-        ]);
-    }
 
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'address' => 'required|string',
-            'phone' => 'required|string',
-            'email' => 'required|email',
-            'opening_time' => 'required|date_format:H:i',
-            'closing_time' => [
-                'required',
-                'date_format:H:i',
-                function ($attribute, $value, $fail) use ($request) {
-                    if (strtotime($value) <= strtotime($request->opening_time)) {
-                        $fail('Closing time must be after opening time.');
-                    }
-                }
-            ],
+            'opening_time' => 'required',
+            'closing_time' =>'required',
             'description' => 'nullable|string',
             'facilities' => 'nullable|array',
             'facilities.*' => 'string',
             'commission_rate' => 'nullable|numeric|min:0|max:100',
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image' => 'nullable|image',
+            'region_id' => 'required|integer|exists:regions,id',
         ]);
 
         if ($validator->fails()) {
@@ -89,8 +83,6 @@ class GymApiController extends Controller
         $gym = Gym::create([
             'name' => $validated['name'],
             'address' => $validated['address'],
-            'phone' => $validated['phone'],
-            'email' => $validated['email'],
             'opening_time' => $validated['opening_time'],
             'closing_time' => $validated['closing_time'],
             'description' => $validated['description'] ?? null,
@@ -99,9 +91,12 @@ class GymApiController extends Controller
             'latitude' => $validated['latitude'] ?? null,
             'longitude' => $validated['longitude'] ?? null,
             'status' => 'pending', // New gyms should be pending approval
+            'region_id'=> $request->region_id,
             'image_path' => $imagePath,
+            'owner_id' => auth()->id(),
+       
         ]);
-
+  
         return response()->json([
             'success' => true,
             'data' => $gym,
@@ -125,24 +120,15 @@ class GymApiController extends Controller
             'address' => 'sometimes|required|string',
             'phone' => 'sometimes|required|string',
             'email' => 'sometimes|required|email',
-            'opening_time' => 'sometimes|required|date_format:H:i',
-            'closing_time' => [
-                'sometimes',
-                'required',
-                'date_format:H:i',
-                function ($attribute, $value, $fail) use ($request) {
-                    if (strtotime($value) <= strtotime($request->opening_time)) {
-                        $fail('Closing time must be after opening time.');
-                    }
-                }
-            ],
+            'opening_time' => 'required',
+            'closing_time' =>'required',
             'description' => 'nullable|string',
             'facilities' => 'nullable|array',
             'facilities.*' => 'string',
             'commission_rate' => 'nullable|numeric|min:0|max:100',
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image' => 'nullable|image',
         ]);
 
         if ($validator->fails()) {
@@ -248,4 +234,77 @@ class GymApiController extends Controller
             'message' => 'Gym rejected successfully'
         ]);
     }
+
+
+    public function nearby(Request $request)
+{
+     dd('Reached nearby method', $request->all());
+    $validator = Validator::make($request->all(), [
+        'latitude' => 'required|numeric',
+        'longitude' => 'required|numeric',
+        'radius' => 'nullable|numeric', // optional, default 10 km
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'success' => false,
+            'errors' => $validator->errors(),
+        ], 422);
+    }
+
+    $latitude = $request->latitude;
+    $longitude = $request->longitude;
+    $radius = $request->radius ?? 10;
+
+    $gyms = Gym::selectRaw("*, 
+        (6371 * acos(cos(radians(?)) * cos(radians(latitude)) * 
+        cos(radians(longitude) - radians(?)) + 
+        sin(radians(?)) * sin(radians(latitude)))) AS distance", 
+        [$latitude, $longitude, $latitude])
+        ->where('status', 'approved')
+        ->having("distance", "<=", $radius)
+        ->orderBy("distance")
+        ->get();
+    //  dd($gyms);
+    return response()->json([
+        'success' => true,
+        'data' => $gyms,
+        'message' => 'Nearby gyms fetched successfully',
+    ]);
+}
+
+public function popular()
+{
+    $gyms = Gym::withCount(['visits', 'reviews'])
+        ->withAvg('reviews', 'rating')
+        ->where('status', 'approved')
+        ->orderByDesc('reviews_count')
+        ->take(10)
+        ->get()
+        ->toArray(); // Convert to array to see all data
+    
+    if (empty($gyms)) {
+        // Debug why no gyms are returned
+        $totalApproved = Gym::where('status', 'approved')->count();
+        $totalGyms = Gym::count();
+        
+        return response()->json([
+            'success' => false,
+            'debug' => [
+                'total_gyms' => $totalGyms,
+                'approved_gyms' => $totalApproved,
+                'gyms_with_visits' => Gym::has('visits')->count(),
+                'gyms_with_reviews' => Gym::has('reviews')->count(),
+            ],
+            'message' => 'Debug information',
+        ]);
+    }
+    
+    return response()->json([
+        'success' => true,
+        'data' => $gyms,
+        'message' => 'Popular gyms retrieved successfully',
+    ]);
+}
+
 }

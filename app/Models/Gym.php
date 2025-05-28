@@ -12,8 +12,6 @@ class Gym extends Model
     protected $fillable = [
         'name',
         'address',
-        'phone',
-        'email',
         'opening_time',
         'closing_time',
         'description',
@@ -43,6 +41,7 @@ class Gym extends Model
         return $this->hasMany(GymVisit::class);
     }
 
+    
     public function reviews()
     {
         return $this->hasMany(GymReview::class);

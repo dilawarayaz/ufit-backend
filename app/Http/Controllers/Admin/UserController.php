@@ -24,30 +24,33 @@ class UserController extends Controller
         return view('admin.users.create', compact('roles', 'subscriptionPlans'));
     }
 
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'first_name' => 'required|string|max:255',
-            'last_name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users',
-            'phone_number' => 'required|unique:users',
-            'password' => 'required|string|min:8',
-            'role_id' => 'required|exists:roles,id',
-        ]);
+ public function store(Request $request)
+{
+    $validated = $request->validate([
+        'first_name' => 'required|string|max:255',
+        'last_name' => 'required|string|max:255',
+        'email' => 'required|email|unique:users',
+        'phone_number' => 'required|unique:users',
+        'password' => 'required|string|min:8',
+        'role_id' => 'required|exists:roles,id',
+        'gym_id' => 'nullable|exists:gyms,id',
+    ]);
 
-        // Create the user
-        $user = User::create([
-            'first_name' => $validated['first_name'],
-            'last_name' => $validated['last_name'],
-            'email' => $validated['email'],
-            'phone_number' => $validated['phone_number'],
-            'password' => Hash::make($validated['password']),
-            'role_id' => $validated['role_id'],
-            'is_admin' => false, // Ensure this is not an admin
-        ]);
+    $user = User::create([
+        'first_name' => $validated['first_name'],
+        'last_name' => $validated['last_name'],
+        'email' => $validated['email'],
+        'phone_number' => $validated['phone_number'],
+        'password' => Hash::make($validated['password']),
+        'role_id' => $validated['role_id'],
+        'gym_id' => $validated['gym_id'] ?? null,
+        'is_admin' => false,
+    ]);
+    // dd($user);
 
-        return redirect()->route('admin.users.index')->with('success', 'User created successfully');
-    }
+    return redirect()->route('admin.users.index')->with('success', 'User created successfully');
+}
+
     public function index(Request $request)
     {
         $query = User::query()->with(['subscriptions.plan', 'role']);
@@ -194,3 +197,4 @@ class UserController extends Controller
         return back()->with('success', 'Subscription changed successfully');
     }
 }
+
