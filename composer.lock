@@ -3860,16 +3860,16 @@
         },
         {
             "name": "stripe/stripe-php",
-            "version": "v17.2.0",
+            "version": "v17.2.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/stripe/stripe-php.git",
-                "reference": "ff2364c75533b71116ea11994d6bd08989b7f67b"
+                "reference": "a84ec46e82e2d1f1dbd04cf332317923ade82ba6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/stripe/stripe-php/zipball/ff2364c75533b71116ea11994d6bd08989b7f67b",
-                "reference": "ff2364c75533b71116ea11994d6bd08989b7f67b",
+                "url": "https://api.github.com/repos/stripe/stripe-php/zipball/a84ec46e82e2d1f1dbd04cf332317923ade82ba6",
+                "reference": "a84ec46e82e2d1f1dbd04cf332317923ade82ba6",
                 "shasum": ""
             },
             "require": {
@@ -3913,9 +3913,9 @@
             ],
             "support": {
                 "issues": "https://github.com/stripe/stripe-php/issues",
-                "source": "https://github.com/stripe/stripe-php/tree/v17.2.0"
+                "source": "https://github.com/stripe/stripe-php/tree/v17.2.1"
             },
-            "time": "2025-04-30T19:20:34+00:00"
+            "time": "2025-05-19T19:03:41+00:00"
         },
         {
             "name": "symfony/console",
@@ -6603,16 +6603,16 @@
         },
         {
             "name": "laravel/sail",
-            "version": "v1.42.0",
+            "version": "v1.43.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/sail.git",
-                "reference": "2edaaf77f3c07a4099965bb3d7dfee16e801c0f6"
+                "reference": "71a509b14b2621ce58574274a74290f933c687f7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/sail/zipball/2edaaf77f3c07a4099965bb3d7dfee16e801c0f6",
-                "reference": "2edaaf77f3c07a4099965bb3d7dfee16e801c0f6",
+                "url": "https://api.github.com/repos/laravel/sail/zipball/71a509b14b2621ce58574274a74290f933c687f7",
+                "reference": "71a509b14b2621ce58574274a74290f933c687f7",
                 "shasum": ""
             },
             "require": {
@@ -6662,7 +6662,7 @@
                 "issues": "https://github.com/laravel/sail/issues",
                 "source": "https://github.com/laravel/sail"
             },
-            "time": "2025-04-29T14:26:46+00:00"
+            "time": "2025-05-13T13:34:34+00:00"
         },
         {
             "name": "mockery/mockery",
@@ -8872,12 +8872,12 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": [],
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
         "php": "^8.1"
     },
-    "platform-dev": {},
+    "platform-dev": [],
     "plugin-api-version": "2.6.0"
 }
