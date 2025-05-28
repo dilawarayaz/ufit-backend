@@ -46,7 +46,7 @@ class AuthController extends Controller
         Cache::put('register_' . $data['email'], $data, now()->addMinutes(10));
         Cache::put('otp_' . $data['email'], $otp, now()->addMinutes(10));
           
-        Mail::to($data['email'])->send(new OtpMail($otp));
+        // Mail::to($data['email'])->send(new OtpMail($otp));
 
         return response()->json([
             'message' => 'OTP sent to email',
