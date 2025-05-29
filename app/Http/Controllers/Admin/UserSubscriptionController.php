@@ -21,7 +21,7 @@ class UserSubscriptionController extends Controller
         return view('admin.user-subscriptions.index', compact('subscriptions', 'currentPage', 'totalPages'));
     }
 
-       /**
+    /**
      * Show the form for creating a new subscription.
      */
     public function create()
@@ -31,7 +31,8 @@ class UserSubscriptionController extends Controller
     }
 
 
-  /**
+    
+    /**
      * Store a newly created subscription.
      */
     public function store(Request $request)
@@ -55,7 +56,7 @@ class UserSubscriptionController extends Controller
     }
 
 
-/**
+    /**
      * Show the form for extending a subscription.
      */
     public function edit($id)
@@ -64,7 +65,7 @@ class UserSubscriptionController extends Controller
         return view('admin.user-subscriptions.edit', compact('subscription'));
     }
 
-     /**
+    /**
      * Extend an existing subscription.
      */
     public function update(Request $request, $id)
@@ -75,16 +76,16 @@ class UserSubscriptionController extends Controller
 
         try {
             $subscription = UserSubscription::findOrFail($id);
-            
+
             // Convert current end date to Carbon instance
             $endDate = Carbon::parse($subscription->end_date);
-            
+
             // Add extension days
             $newEndDate = $endDate->addDays($validated['extension_days']);
-            
+
             // Update subscription
             $subscription->update(['end_date' => $newEndDate]);
-            
+
             return redirect()
                 ->route('admin.user-subscriptions.index')
                 ->with('success', 'Subscription extended successfully!');

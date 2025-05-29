@@ -84,27 +84,27 @@
             <div class="card shadow-sm mb-4">
                 <div class="card-header bg-white d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Subscription Details</h5>
-                    @if($user->activeSubscription)
-                        <span class="badge bg-{{ $user->activeSubscription->is_active ? 'success' : 'danger' }}">
-                            {{ $user->activeSubscription->is_active ? 'Active' : 'Inactive' }}
+                    @if($user->subscriptions)
+                        <span class="badge bg-{{ $user->subscriptions->is_active ? 'success' : 'danger' }}">
+                            {{ $user->subscriptions->is_active ? 'Active' : 'Inactive' }}
                         </span>
                     @endif
                 </div>
                 <div class="card-body">
-                    @if($user->activeSubscription)
+                    @if($user->subscriptions)
                         <div class="row">
                             <div class="col-md-6">
                                 <ul class="list-unstyled">
-                                    <li class="mb-2"><strong>Plan:</strong> {{ $user->activeSubscription->plan->name }}</li>
-                                    <li class="mb-2"><strong>Started:</strong> {{ $user->activeSubscription->start_date->format('M d, Y') }}</li>
-                                    <li class="mb-2"><strong>Expires:</strong> {{ $user->activeSubscription->end_date->format('M d, Y') }}</li>
+                                    <li class="mb-2"><strong>Plan:</strong> {{ $user->subscriptions->plan->name }}</li>
+                                    <li class="mb-2"><strong>Started:</strong> {{ $user->subscriptions->start_date->format('M d, Y') }}</li>
+                                    <li class="mb-2"><strong>Expires:</strong> {{ $user->subscriptions->end_date->format('M d, Y') }}</li>
                                 </ul>
                             </div>
                             <div class="col-md-6">
                                 <ul class="list-unstyled">
-                                    <li class="mb-2"><strong>Price:</strong> ${{ number_format($user->activeSubscription->plan->price, 2) }}/{{ $user->activeSubscription->plan->billing_cycle }}</li>
-                                    <li class="mb-2"><strong>Auto Renew:</strong> {{ $user->activeSubscription->auto_renew ? 'Yes' : 'No' }}</li>
-                                    <li class="mb-2"><strong>Days Left:</strong> {{ now()->diffInDays($user->activeSubscription->end_date) }} days</li>
+                                    <li class="mb-2"><strong>Price:</strong> ${{ number_format($user->subscriptions->plan->price, 2) }}/{{ $user->subscriptions->plan->billing_cycle }}</li>
+                                    <li class="mb-2"><strong>Auto Renew:</strong> {{ $user->subscriptions->auto_renew ? 'Yes' : 'No' }}</li>
+                                    <li class="mb-2"><strong>Days Left:</strong> {{ now()->diffInDays($user->subscriptions->end_date) }} days</li>
                                 </ul>
                             </div>
                         </div>

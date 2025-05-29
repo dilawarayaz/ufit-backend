@@ -88,10 +88,11 @@
                                 </span>
                             </td>
                             <td>
-                                @if($user->activeSubscription)
-                                <span class="badge bg-{{ $user->activeSubscription->is_active ? 'success' : 'warning' }} px-3 py-2 rounded-pill">
-                                    {{ $user->activeSubscription->plan->name }}
+                                @if($user->subscriptions)
+                                <span class="badge bg-{{ $user->subscriptions->is_active ? 'success' : 'warning' }} px-3 py-2 rounded-pill">
+                                    {{ $user->subscriptions->plan->name }}
                                 </span>
+                                
                                 @else
                                 <span class="badge bg-danger px-3 py-2 rounded-pill">None</span>
                                 @endif

@@ -56,7 +56,7 @@ class User extends Authenticatable
 
     public function subscriptions()
     {
-        return $this->hasMany(UserSubscription::class);
+        return $this->hasOne(UserSubscription::class);
     }
 
     public function favoriteGyms()
@@ -65,7 +65,7 @@ class User extends Authenticatable
     }
     public function activeSubscriptions()
     {
-        return $this->hasMany(UserSubscription::class)
+        return $this->hasOne(UserSubscription::class)
             ->where('is_active', true)
             ->where(function ($query) {
                 $query->where('end_date', '>', now())

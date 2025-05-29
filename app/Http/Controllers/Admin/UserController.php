@@ -114,7 +114,7 @@ class UserController extends Controller
             ->get();
 
         $totalPages = ceil($total / $perPage); // Total pages calculate karo
-
+    //    dd($users);
         // Ye data frontend ke liye bhejna
         $subscriptionPlans = SubscriptionPlan::all();
         $roles = Role::all();
@@ -127,6 +127,7 @@ class UserController extends Controller
             'currentPage'
         ));
     }
+
 
 
     public function edit(User $user)
