@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Stripe\Stripe;
 use Stripe\PaymentIntent;
 use App\Models\SubscriptionPlan;
+use App\Models\User;
 use App\Models\UserSubscription;
 
 class PaymentConfirmationController extends Controller
@@ -49,7 +50,7 @@ class PaymentConfirmationController extends Controller
                     'stripe_customer_id' => $paymentIntent->customer,
                     'last_payment_date' => now(),
                 ]);
-
+             User::where('id', $subscription->user_id)->update(["is_paid"=>1]);
                 return response()->json([
                     'success' => true,
                     'subscription' => $subscription

@@ -21,15 +21,21 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
-        'first_name',
-        'last_name',
-        'phone_number',
-        'email',
-        'password',
-        'role_id',  // Add this
-        'gym_id',
-        'profile_picture',
-    ];
+    'first_name',
+    'last_name',
+    'phone_number',
+    'email',
+    'password',
+    'role_id',
+    'gym_id',
+    'profile_picture',
+    'verification_code',
+    'stripe_customer_id',
+    'is_admin',
+    'is_paid',
+    'is_suspended',
+];
+
 
     /**
      * The attributes that should be hidden for serialization.
@@ -66,7 +72,7 @@ class User extends Authenticatable
     public function activeSubscriptions()
     {
         return $this->hasOne(UserSubscription::class)
-            ->where('is_active', true)
+            ->where('is_active', 1)
             ->where(function ($query) {
                 $query->where('end_date', '>', now())
                     ->orWhereNull('end_date');

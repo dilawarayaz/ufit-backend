@@ -43,9 +43,8 @@ class AuthController extends Controller
         $data = $request->only(['first_name', 'last_name', 'email', 'phone_number', 'password']);
         $data['password'] = Hash::make($data['password']);
 
-        Cache::put('register_' . $data['email'], $data, now()->addMinutes(10));
-        Cache::put('otp_' . $data['email'], $otp, now()->addMinutes(10));
-          
+        $data['verification_code'] = $otp;
+        User::create($data);
         // Mail::to($data['email'])->send(new OtpMail($otp));
 
         return response()->json([
@@ -60,23 +59,22 @@ class AuthController extends Controller
             'email' => 'required|email',
             'otp' => 'required'
         ]);
+        $userData = User::where('email', $request->email)->first();
 
-        $cachedOtp = Cache::get('otp_' . $request->email);
-        $userData = Cache::get('register_' . $request->email);
 
-        if (!$cachedOtp || $cachedOtp != $request->otp) {
+        if ($userData->verification_code != $request->otp) {
             return response()->json(['message' => 'Invalid or expired OTP'], 400);
         }
 
-        $user = User::create($userData);
-        $token = $user->createToken('auth_token')->plainTextToken;
-
-        Cache::forget('register_' . $request->email);
-        Cache::forget('otp_' . $request->email);
+        $user = User::where('id',$userData->id)->update([
+            'email_verified_at' => now(),
+            'verification_code' => null,
+        ]);
+        $token = $userData->createToken('auth_token')->plainTextToken;
 
         return response()->json([
             'message' => 'User verified and registered successfully',
-            'user' => $user,
+            'user' => $userData,
             'access_token' => $token,
             'token_type' => 'Bearer'
         ]);

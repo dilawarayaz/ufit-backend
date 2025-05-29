@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -15,21 +16,16 @@ class UserApiController extends Controller
      */
     public function getProfile()
     {
-        $user = Auth::user();
-        
+        $id = Auth::user()->id;
+        $user = User::where("id", $id)->with('activeSubscriptions.plan')->first();
+
+
         return response()->json([
             'success' => true,
-            'data' => [
-                'first_name' => $user->first_name,
-                'last_name' => $user->last_name,
-                'email' => $user->email,
-                'phone_number' => $user->phone_number,
-                'profile_picture' => $user->profile_picture 
-                    ? Storage::url($user->profile_picture) 
-                    : null,
-            ]
+            'data' => $user
         ]);
     }
+
 
     /**
      * Update user profile
@@ -37,12 +33,12 @@ class UserApiController extends Controller
     public function updateProfile(Request $request)
     {
         $user = Auth::user();
-        
+
         $validator = Validator::make($request->all(), [
             'first_name' => 'sometimes|string|max:255',
             'last_name' => 'sometimes|string|max:255',
-            'email' => 'sometimes|email|unique:users,email,'.$user->id,
-            'phone_number' => 'sometimes|string|unique:users,phone_number,'.$user->id,
+            'email' => 'sometimes|email|unique:users,email,' . $user->id,
+            'phone_number' => 'sometimes|string|unique:users,phone_number,' . $user->id,
             'profile_picture' => 'sometimes|image',
         ]);
 
@@ -55,14 +51,14 @@ class UserApiController extends Controller
         }
 
         $data = $request->only(['first_name', 'last_name', 'email', 'phone_number']);
-          
+
         // Handle profile picture upload
         if ($request->hasFile('profile_picture')) {
             // Delete old picture if exists
             if ($user->profile_picture) {
                 Storage::delete($user->profile_picture);
             }
-            
+
             $path = $request->file('profile_picture')->store('profile_pictures');
             $data['profile_picture'] = $path;
         }
@@ -77,8 +73,8 @@ class UserApiController extends Controller
                 'last_name' => $user->last_name,
                 'email' => $user->email,
                 'phone_number' => $user->phone_number,
-                'profile_picture' => $user->profile_picture 
-                    ? Storage::url($user->profile_picture) 
+                'profile_picture' => $user->profile_picture
+                    ? Storage::url($user->profile_picture)
                     : null,
             ]
         ]);
