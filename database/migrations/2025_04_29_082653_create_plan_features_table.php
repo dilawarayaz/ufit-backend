@@ -16,7 +16,8 @@ return new class extends Migration
             $table->foreignId('subscription_plan_id')->constrained('subscription_plans')->onDelete('cascade');
             $table->string('name');
             $table->text('description')->nullable();
-            $table->integer('limit')->nullable(); // For features that can be limited (e.g., 5 gym visits)
+            $table->integer('limit')->nullable(); 
+            $table->boolean('is_unlimited')->default(false);
             $table->boolean('enabled')->default(true);
             $table->timestamps();
         });

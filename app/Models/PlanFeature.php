@@ -10,7 +10,7 @@ class PlanFeature extends Model
     use HasFactory;
 
     protected $fillable = [
-        'plan_id',  // Foreign key
+        'subscription_plan_id',  // Changed from plan_id to match relationship
         'name',
         'description',
         'limit',
@@ -28,7 +28,7 @@ class PlanFeature extends Model
     {
         return [
             'id' => $this->id,
-            'plan_id' => $this->plan_id,
+            'subscription_plan_id' => $this->subscription_plan_id, // Updated field name
             'name' => $this->name,
             'description' => $this->description,
             'limit' => $this->limit,
@@ -46,6 +46,7 @@ class PlanFeature extends Model
 
     public function plan()
     {
-        return $this->belongsTo(SubscriptionPlan::class, 'plan_id');
+        return $this->belongsTo(SubscriptionPlan::class);
+        // Removed the second parameter since we're now using proper column name
     }
 }

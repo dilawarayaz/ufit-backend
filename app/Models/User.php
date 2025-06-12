@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\HasApiTokens;
 use Kyslik\ColumnSortable\Sortable;
 
@@ -12,7 +13,7 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
     use HasApiTokens, HasFactory, Notifiable, Sortable;
-
+    use Notifiable;
     public $sortable = ['id', 'first_name', 'last_name', 'email', 'created_at'];
 
     /**
@@ -34,7 +35,11 @@ class User extends Authenticatable
     'is_admin',
     'is_paid',
     'is_suspended',
+    'current_gym_id',
 ];
+
+
+
 
 
     /**
@@ -59,6 +64,28 @@ class User extends Authenticatable
     /**
      * User Subscriptions Relationship
      */
+
+
+
+   public function getProfilePictureAttribute()
+{
+    $filename = $this->attributes['profile_picture'] ?? null;
+
+    if (!$filename) {
+        return null;
+    }
+
+    return url(asset('uploads/users/').'/'.$filename);
+}
+
+public function enrollments()
+{
+    return $this->hasMany(Enrollment::class);
+}
+public function activeEnrollment()
+{
+    return $this->hasOne(Enrollment::class)->where('status', 'active');
+}
 
     public function subscriptions()
     {
@@ -99,6 +126,12 @@ class User extends Authenticatable
 {
     return $this->belongsTo(Gym::class);
 }
-
-
+public function ownedGym()
+{
+    return $this->hasOne(Gym::class, 'owner_id');
+}
+public function isGymOwner()
+{
+    return $this->ownedGym()->exists();
+}
 }

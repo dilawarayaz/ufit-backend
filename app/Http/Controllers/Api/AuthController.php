@@ -112,26 +112,40 @@ class AuthController extends Controller
         ]);
     }
 
-    public function gymLogin(Request $request)
-    {
-        $credentials = $request->only('email', 'password');
+   public function gymLogin(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'email' => 'required|string|email',
+        'password' => 'required|string',
+    ]);
 
-        if (!$token = auth()->attempt($credentials)) {
-            return response()->json(['error' => 'Invalid credentials'], 401);
-        }
-
-        $user = auth()->user();
-
-        if ($user->role_id != 2) {
-            return response()->json(['error' => 'Access denied'], 403);
-        }
-
+    if ($validator->fails()) {
         return response()->json([
-            'access_token' => $token,
-            'token_type' => 'bearer',
-            'user' => $user
-        ]);
+            'message' => 'Validation error',
+            'errors' => $validator->errors()
+        ], 422);
     }
+
+    $user = User::where('email', $request->email)->first();
+
+    if (!$user || !Hash::check($request->password, $user->password)) {
+        return response()->json(['message' => 'Invalid credentials'], 401);
+    }
+
+    if ($user->role_id != 2) {
+        return response()->json(['error' => 'Access denied'], 403);
+    }
+
+    $user->tokens()->delete(); // single device login
+    $token = $user->createToken('auth_token')->plainTextToken;
+
+    return response()->json([
+        'message' => 'Login successful',
+        'user' => $user->only(['id', 'first_name', 'last_name', 'email']),
+        'access_token' => $token,
+        'token_type' => 'Bearer'
+    ]);
+}
 
     // ✅ Logout
     public function logout(Request $request)

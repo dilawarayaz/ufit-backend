@@ -9,18 +9,19 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
-    {
-        Schema::create('subscription_plans', function (Blueprint $table) {
-            $table->id();
-            $table->string('name'); // The name of the subscription plan
-            $table->string('status'); // Status of the subscription, e.g., 'active', 'inactive'
-            $table->decimal('price', 8, 2); // Price of the subscription
-            $table->timestamps(); // Created at and updated at timestamps
-        });
-    }
-  
-    
+   public function up(): void
+{
+    Schema::create('subscription_plans', function (Blueprint $table) {
+        $table->id();
+        $table->string('name');
+        $table->enum('type', ['basic', 'premium', 'standard', 'startup'])->default('basic');
+        $table->string('status');
+        $table->decimal('monthly_price', 8, 2);
+        $table->decimal('annual_price', 10, 2)->nullable();
+        $table->timestamps();
+    });
+}
+
     /**
      * Reverse the migrations.
      */

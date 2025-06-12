@@ -1,8 +1,10 @@
  <?php
 
     use App\Http\Controllers\Api\AuthController;
+    use App\Http\Controllers\Api\EnrollController;
     use App\Http\Controllers\Api\FavoriteGymController;
     use App\Http\Controllers\Api\GymApiController;
+    use App\Http\Controllers\Api\GymOwnerController;
     use App\Http\Controllers\Api\PlanApiController;
     use App\Http\Controllers\Api\UserApiController;
     use App\Http\Controllers\Api\PaymentConfirmationController;
@@ -32,9 +34,17 @@
 
     // Plans routes
     Route::prefix('plans')->group(function () {
-        Route::get('/', [PlanApiController::class, 'index'])->name('api.plans.index');
-        Route::get('/{plan}', [PlanApiController::class, 'show'])->name('api.plans.show');
-        Route::get('/{plan}/features', [PlanApiController::class, 'features'])->name('api.plans.features');
+        // Get all active plans (basic info)
+        Route::get('/', [PlanApiController::class, 'index']);
+
+        // Get detailed plan with features and gyms
+        Route::get('/{plan}', [PlanApiController::class, 'show']);
+
+        // Get only features of a specific plan
+        Route::get('/{plan}/features', [PlanApiController::class, 'features']);
+
+        // Optional: Get only gyms of a specific plan
+        Route::get('/{plan}/gyms', [PlanApiController::class, 'gyms']);
     });
 
     // Gyms routes
@@ -49,7 +59,7 @@
         // Protected routes (require authentication)
         Route::middleware('auth:sanctum')->group(function () {
             Route::post('/', [GymApiController::class, 'store']);
-            Route::put('/{id}', [GymApiController::class, 'update']);
+            Route::post('/{id}/update', [GymApiController::class, 'update']);
             Route::patch('/{id}', [GymApiController::class, 'update']);
             Route::delete('/{id}', [GymApiController::class, 'destroy']);
 
@@ -76,11 +86,23 @@
         // Profile routes
         Route::prefix('profile')->group(function () {
             Route::get('/', [UserApiController::class, 'getProfile']);
-            Route::put('/', [UserApiController::class, 'updateProfile']);
+            Route::post('/', [UserApiController::class, 'updateProfile']);
         });
     });
 
 
+    Route::middleware('auth:sanctum')->group(function () {
+    // Simple notification routes
+    Route::get('/notifications', [GymOwnerController::class, 'getNotifications']);
+    Route::post('/notifications/mark-read', [GymOwnerController::class, 'markNotificationsRead']);
+});
 
-Route::post('/create-payment-intent', [StripePaymentController::class, 'createPaymentIntent']);
-Route::post('/confirm-payment', [PaymentConfirmationController::class, 'confirmPayment']);
+    Route::post('/create-payment-intent', [StripePaymentController::class, 'createPaymentIntent']);
+    Route::post('/confirm-payment', [PaymentConfirmationController::class, 'confirmPayment']);
+
+
+
+    // enrollment
+
+    Route::post('/enroll', [EnrollController::class, 'enroll'])->middleware('auth:sanctum');
+    Route::get('/enrollments', [EnrollController::class, 'getEnrollments'])->middleware('auth:sanctum');

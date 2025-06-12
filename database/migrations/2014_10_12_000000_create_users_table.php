@@ -24,6 +24,7 @@ return new class extends Migration
             $table->boolean('is_suspended')->default(false);
             $table->timestamp('email_verified_at')->nullable();
             $table->unsignedBigInteger('gym_id')->nullable();
+            $table->unsignedBigInteger('current_gym_id')->nullable();
             $table->unsignedBigInteger('role_id')->nullable();
             $table->unsignedBigInteger('verification_code')->nullable();
             $table->string('password');

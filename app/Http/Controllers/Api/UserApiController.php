@@ -32,7 +32,7 @@ class UserApiController extends Controller
      */
     public function updateProfile(Request $request)
     {
-        $user = Auth::user();
+        $user = User::findOrFail(Auth::user()->id);
 
         $validator = Validator::make($request->all(), [
             'first_name' => 'sometimes|string|max:255',
@@ -52,18 +52,16 @@ class UserApiController extends Controller
 
         $data = $request->only(['first_name', 'last_name', 'email', 'phone_number']);
 
-        // Handle profile picture upload
-        if ($request->hasFile('profile_picture')) {
-            // Delete old picture if exists
-            if ($user->profile_picture) {
-                Storage::delete($user->profile_picture);
+     
+
+         if ($request->hasFile('profile_picture')) {
+                $imageName = rand(9, 9999) . time() . '.' . $request->profile_picture->extension();
+                $request->profile_picture->move(public_path('uploads/users'), $imageName);
+               $data['profile_picture'] = $imageName;
             }
 
-            $path = $request->file('profile_picture')->store('profile_pictures');
-            $data['profile_picture'] = $path;
-        }
-
         $user->update($data);
+        $user = User::where('id',Auth::user()->id)->first();
 
         return response()->json([
             'success' => true,
@@ -74,8 +72,7 @@ class UserApiController extends Controller
                 'email' => $user->email,
                 'phone_number' => $user->phone_number,
                 'profile_picture' => $user->profile_picture
-                    ? Storage::url($user->profile_picture)
-                    : null,
+                    
             ]
         ]);
     }

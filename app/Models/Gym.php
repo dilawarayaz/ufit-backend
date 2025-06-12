@@ -16,8 +16,9 @@ class Gym extends Model
         'closing_time',
         'description',
         'image_path',
+        'amenities',
         'facilities',
-        'status', 
+        'status',
         'commission_rate',
         'payment_settings',
         'latitude',
@@ -28,8 +29,14 @@ class Gym extends Model
 
     protected $casts = [
         'facilities' => 'array',
-        'payment_settings' => 'json',
+        'amenities' => 'array',
+        'payment_settings' => 'array',
     ];
+
+public function subscriptionPlans()
+{
+    return $this->belongsToMany(SubscriptionPlan::class, 'gym_plan');
+}
 
     public function favoredByUsers()
     {
@@ -41,7 +48,7 @@ class Gym extends Model
         return $this->hasMany(GymVisit::class);
     }
 
-    
+
     public function reviews()
     {
         return $this->hasMany(GymReview::class);
@@ -61,30 +68,50 @@ class Gym extends Model
     {
         return $this->visits()->count();
     }
-
+    public function images()
+    {
+        return $this->hasMany(GymImage::class);
+    }
     public function region()
-{
-    return $this->belongsTo(Region::class);
-}
+    {
+        return $this->belongsTo(Region::class);
+    }
 
-public function checkIns()
-{
-    return $this->hasMany(Checkin::class);
-}
+    public function checkIns()
+    {
+        return $this->hasMany(Checkin::class);
+    }
 
-public function userSubscriptions()
-{
-    return $this->hasMany(UserSubscription::class);
-}
+    public function userSubscriptions()
+    {
+        return $this->hasMany(UserSubscription::class);
+    }
 
-public function users()
+    public function users()
+    {
+        return $this->hasMany(User::class);
+    }
+
+    public function owner()
+    {
+        return $this->hasOne(User::class, 'id', 'owner_id');
+    }
+
+    // In App\Models\Gym
+
+public function members()
 {
     return $this->hasMany(User::class);
 }
 
-public function owner()
+public function enrollments()
 {
-    return $this->hasOne(User::class,'id','owner_id');
+    return $this->hasMany(Enrollment::class);
 }
+
+// public function owner()
+// {
+//     return $this->belongsTo(User::class, 'owner_id'); // Adjust based on your schema
+// }
 
 }

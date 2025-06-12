@@ -1,4 +1,5 @@
 <?php
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -21,15 +22,17 @@ return new class extends Migration
             $table->time('opening_time');
             $table->time('closing_time');
             $table->text('description')->nullable();
-            $table->string('image_path')->nullable(); // For image storage
+           $table->json('image_path')->nullable(); // For image storage
 
             // Additional fields
             $table->json('facilities')->nullable();
+            $table->json('amenities')->nullable();
             $table->string('status')->default('pending'); // 'pending', 'approved', 'rejected'
             $table->decimal('commission_rate', 5, 2)->default(0);
             $table->json('payment_settings')->nullable();
-            $table->decimal('latitude', 10, 7)->nullable();
-            $table->decimal('longitude', 10, 7)->nullable();
+            $table->string('latitude', 200)->nullable();
+            $table->string('longitude', 200)->nullable();
+
 
             $table->timestamps();
         });
